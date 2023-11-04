@@ -377,7 +377,7 @@ static void raspi4b_machine_class_init(ObjectClass *oc, void *data)
     RaspiMachineClass *rmc = RASPI_MACHINE_CLASS(oc);
 
     rmc->board_rev = 0xa03111; /* Revision 1.1 */
-    rmc->default_cpu_type = ARM_CPU_TYPE_NAME("cortex-a72");
+    // rmc->default_cpu_type = ARM_CPU_TYPE_NAME("cortex-a72");
     raspi_machine_class_common_init(mc, rmc->board_rev);
 };
 #endif /* TARGET_AARCH64 */
