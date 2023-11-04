@@ -59,7 +59,7 @@ DECLARE_OBJ_CHECKERS(RaspiMachineState, RaspiMachineClass,
 
 /*
  * Board revision codes:
- * www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/
+ * https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#new-style-revision-codes
  */
 FIELD(REV_CODE, REVISION,           0, 4);
 FIELD(REV_CODE, TYPE,               4, 8);
@@ -72,6 +72,7 @@ typedef enum RaspiProcessorId {
     PROCESSOR_ID_BCM2835 = 0,
     PROCESSOR_ID_BCM2836 = 1,
     PROCESSOR_ID_BCM2837 = 2,
+    PROCESSOR_ID_BCM2711 = 3,
 } RaspiProcessorId;
 
 static const struct {
@@ -81,6 +82,7 @@ static const struct {
     [PROCESSOR_ID_BCM2835] = {TYPE_BCM2835, 1},
     [PROCESSOR_ID_BCM2836] = {TYPE_BCM2836, BCM283X_NCPUS},
     [PROCESSOR_ID_BCM2837] = {TYPE_BCM2837, BCM283X_NCPUS},
+    [PROCESSOR_ID_BCM2711] = {TYPE_BCM2711, BCM283X_NCPUS},
 };
 
 static uint64_t board_ram_size(uint32_t board_rev)
@@ -113,7 +115,8 @@ static const char *board_type(uint32_t board_rev)
 {
     static const char *types[] = {
         "A", "B", "A+", "B+", "2B", "Alpha", "CM1", NULL, "3B", "Zero",
-        "CM3", NULL, "Zero W", "3B+", "3A+", NULL, "CM3+", "4B",
+        "CM3", NULL, "Zero W", "3B+", "3A+", NULL, "CM3+", "4B", "Zero 2 W",
+        "400", "CM4", "CM4S", NULL, "5",
     };
     assert(FIELD_EX32(board_rev, REV_CODE, STYLE)); /* Only new style */
     int bt = FIELD_EX32(board_rev, REV_CODE, TYPE);
@@ -364,7 +367,17 @@ static void raspi3b_machine_class_init(ObjectClass *oc, void *data)
     MachineClass *mc = MACHINE_CLASS(oc);
     RaspiMachineClass *rmc = RASPI_MACHINE_CLASS(oc);
 
-    rmc->board_rev = 0xa02082;
+    rmc->board_rev = 0xa02082; /* Revision 1.2 */
+    raspi_machine_class_common_init(mc, rmc->board_rev);
+};
+
+static void raspi4b_machine_class_init(ObjectClass *oc, void *data)
+{
+    MachineClass *mc = MACHINE_CLASS(oc);
+    RaspiMachineClass *rmc = RASPI_MACHINE_CLASS(oc);
+
+    rmc->board_rev = 0xa03111; /* Revision 1.1 */
+    rmc->default_cpu_type = ARM_CPU_TYPE_NAME("cortex-a72");
     raspi_machine_class_common_init(mc, rmc->board_rev);
 };
 #endif /* TARGET_AARCH64 */
@@ -391,6 +404,10 @@ static const TypeInfo raspi_machine_types[] = {
         .name           = MACHINE_TYPE_NAME("raspi3b"),
         .parent         = TYPE_RASPI_MACHINE,
         .class_init     = raspi3b_machine_class_init,
+    }, {
+        .name           = MACHINE_TYPE_NAME("raspi4b"),
+        .parent         = TYPE_RASPI_MACHINE,
+        .class_init     = raspi4b_machine_class_init,
 #endif
     }, {
         .name           = TYPE_RASPI_MACHINE,
